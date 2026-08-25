@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BackupManager.ViewModels"
+             xmlns:conv="using:Avalonia.Controls.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="BackupManager.Views.SnapshotsView"
+             x:DataType="vm:SnapshotsViewModel">
+
+    <Design.DataContext>
+        <vm:SnapshotsViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,Auto,*,*" ColumnDefinitions="*,*">
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Snapshots" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
+
+        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
+            <ComboBox ItemsSource="{Binding Repositories}" SelectedItem="{Binding SelectedRepository}"
+                      PlaceholderText="Select a repository" Width="300">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Content="Pull a copy (restore)" Command="{Binding PullCopyCommand}" />
+            <TextBlock Text="{Binding Status}" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
+
+        <ListBox Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}"
+                 Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4">
+                        <TextBlock Text="{Binding ShortId}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Time, StringFormat='{}{0:g}'}" FontSize="12"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        <TextBlock Text="{Binding Paths.Count, StringFormat='{}Paths: {0}'}" FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <ListBox Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" ItemsSource="{Binding Contents}"
+                 Margin="10,0,0,0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" FontSize="12" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Select a snapshot, then choose 'Pull a copy' to restore it to a folder of your choice."
+                   FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                   Margin="0,8,0,0" TextWrapping="Wrap" />
+    </Grid>
+</UserControl>

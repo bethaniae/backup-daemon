@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BackupManager.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="BackupManager.Views.RepositoriesView"
+             x:DataType="vm:RepositoriesViewModel">
+
+    <Design.DataContext>
+        <vm:RepositoriesViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Repositories" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
+
+        <StackPanel Grid.Column="0" Grid.Row="1" Spacing="6">
+            <Button Content="New repository" Command="{Binding NewCommand}" HorizontalAlignment="Stretch" />
+            <ListBox ItemsSource="{Binding Repositories}" SelectedItem="{Binding Selected}"
+                     Height="380" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Grid.Row="1" Spacing="8" Margin="14,0,0,0">
+            <TextBox PlaceholderText="Friendly name" Text="{Binding Name}" />
+            <TextBox PlaceholderText="Repository location (e.g. /backups or sftp:user@host:/path)" Text="{Binding Location}" />
+            <TextBox PlaceholderText="Password" Text="{Binding Password}" PasswordChar="*" />
+            <TextBox PlaceholderText="Notes (optional)" Text="{Binding Notes}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Save" Command="{Binding SaveCommand}" />
+                <Button Content="Test connection" Command="{Binding TestCommand}" />
+                <Button Content="Initialize repo" Command="{Binding InitCommand}" />
+                <Button Content="Delete" Command="{Binding DeleteCommand}"
+                        Foreground="Red" />
+            </StackPanel>
+            <ProgressBar IsIndeterminate="{Binding Busy}" IsVisible="{Binding Busy}" />
+            <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

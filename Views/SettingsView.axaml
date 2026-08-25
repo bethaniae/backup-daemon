@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BackupManager.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="BackupManager.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel />
+    </Design.DataContext>
+
+    <StackPanel Spacing="12" MaxWidth="560">
+        <TextBlock Text="Settings" FontSize="22" FontWeight="Bold" />
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="restic binary path" FontWeight="SemiBold" />
+            <TextBox Text="{Binding ResticPath}" PlaceholderText="restic (leave default to use PATH)" />
+            <TextBlock Text="{Binding ResticVersion}" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Test restic" Command="{Binding TestCommand}" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="Default download folder (for pulled copies)" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" Text="{Binding DownloadFolder}" IsReadOnly="True" />
+                <Button Grid.Column="1" Content="Browse…" Command="{Binding PickFolderCommand}" Margin="6,0,0,0" />
+            </Grid>
+        </StackPanel>
+
+        <CheckBox Content="Close to tray instead of quitting" IsChecked="{Binding CloseToTray}" />
+        <CheckBox Content="Show notifications" IsChecked="{Binding NotificationsEnabled}" />
+        <CheckBox Content="Start Backup Manager when I log in" IsChecked="{Binding StartWithOs}" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Save settings" Command="{Binding SaveCommand}" />
+        </StackPanel>
+        <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+    </StackPanel>
+</UserControl>

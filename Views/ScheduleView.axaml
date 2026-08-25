@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BackupManager.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="BackupManager.Views.ScheduleView"
+             x:DataType="vm:ScheduleViewModel">
+
+    <Design.DataContext>
+        <vm:ScheduleViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Schedule" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
+
+        <StackPanel Grid.Column="0" Grid.Row="1" Spacing="6">
+            <Button Content="New job" Command="{Binding NewCommand}" HorizontalAlignment="Stretch" />
+            <ListBox ItemsSource="{Binding Jobs}" SelectedItem="{Binding Selected}"
+                     Height="380" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="4">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding ScheduleTime, StringFormat='{}At {0:hh\\:mm}'}" FontSize="12"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <CheckBox Content="Schedule paused" IsChecked="{Binding SchedulePaused}" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Grid.Row="1" Spacing="8" Margin="14,0,0,0">
+            <TextBox PlaceholderText="Job name" Text="{Binding JobName}" />
+            <ComboBox ItemsSource="{Binding Repositories}" SelectedValue="{Binding RepositoryId}"
+                      PlaceholderText="Repository" SelectedValueBinding="{Binding Id}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBox PlaceholderText="Folders to back up (one per line)" Text="{Binding PathsText}"
+                     AcceptsReturn="True" Height="90" />
+            <Button Content="Add folder…" Command="{Binding AddPathCommand}" HorizontalAlignment="Left" />
+            <TextBox PlaceholderText="Excludes (one per line, optional)" Text="{Binding ExcludesText}"
+                     AcceptsReturn="True" Height="60" />
+            <TextBox PlaceholderText="Tags (comma separated, optional)" Text="{Binding TagsText}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Run daily at:" VerticalAlignment="Center" />
+                <TextBox Text="{Binding ScheduleTime}" Width="80" />
+            </StackPanel>
+            <CheckBox Content="Enabled" IsChecked="{Binding Enabled}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Save" Command="{Binding SaveCommand}" />
+                <Button Content="Run now" Command="{Binding RunNowCommand}" />
+                <Button Content="Delete" Command="{Binding DeleteCommand}" Foreground="Red" />
+            </StackPanel>
+            <ProgressBar IsIndeterminate="{Binding Busy}" IsVisible="{Binding Busy}" />
+            <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

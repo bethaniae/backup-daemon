@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BackupManager.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="BackupManager.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <Design.DataContext>
+        <vm:DashboardViewModel />
+    </Design.DataContext>
+
+    <StackPanel Spacing="14">
+        <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" />
+
+        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                CornerRadius="8" Padding="16">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding StatusText}" FontSize="15" />
+                <TextBlock Text="{Binding LastBackupText}" FontSize="13"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <TextBlock Text="⚠ restic binary not found. Set its path in Settings."
+                           Foreground="Red" FontSize="13" IsVisible="{Binding ResticMissing}" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Content="Sync new data now" Command="{Binding SyncNowCommand}" FontSize="14" Padding="14,8" />
+            <Button Content="Pull a copy from a backup" Command="{Binding PullCopyCommand}" FontSize="14" Padding="14,8" />
+        </StackPanel>
+
+        <TextBlock Text="Recent activity" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
+        <ItemsControl ItemsSource="{Binding RecentRuns}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border CornerRadius="6" Padding="12,8" Margin="0,4"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding JobName}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:g}'}" FontSize="12" />
+                                <TextBlock Text="{Binding Success, StringFormat='Success: {0}'}" FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>
