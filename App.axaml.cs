@@ -23,7 +23,6 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        Log("start");
         var services = new ServiceCollection();
         services.AddSingleton<IConfigStore, JsonConfigStore>();
         services.AddSingleton<IResticService, ResticService>();
@@ -38,20 +37,16 @@ public partial class App : Application
         services.AddTransient<LogsViewModel>();
         services.AddTransient<SettingsViewModel>();
         Services = services.BuildServiceProvider();
-        Log("services built");
 
         var config = Services.GetRequiredService<IConfigStore>();
         config.Load();
-        Log("config loaded");
 
         var main = Services.GetRequiredService<MainViewModel>();
         DataContext = main;
-        Log("main resolved");
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var window = new MainWindow { DataContext = main };
-            window.Loaded += (_, _) => Log("WINDOW LOADED");
             MainWindowRef = window;
             desktop.MainWindow = window;
             desktop.ShutdownRequested += (_, e) =>
@@ -62,30 +57,15 @@ public partial class App : Application
                     window.Hide();
                 }
             };
-            Log("window assigned");
-        }
-        else
-        {
-            Log("NO desktop lifetime");
         }
 
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BM_NOTRAY")))
-            TryCreateTrayIcon(main);
-        Log("tray attempted");
+        TryCreateTrayIcon(main);
 
         var scheduler = Services.GetRequiredService<ISchedulerService>();
         scheduler.Start();
-        Log("scheduler started");
 
         base.OnFrameworkInitializationCompleted();
-        Log("base done; showing window explicitly");
         MainWindowRef?.Show();
-    }
-
-    private static void Log(string msg)
-    {
-        try { File.AppendAllText("/tmp/backupmanager_trace.log", $"[{DateTime.Now:HH:mm:ss}] {msg}\n"); }
-        catch { }
     }
 
     private void TryCreateTrayIcon(MainViewModel main)
