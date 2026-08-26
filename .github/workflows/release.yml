@@ -11,16 +11,16 @@ permissions:
 jobs:
   build-and-release:
     name: Build ${{ matrix.rid }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - os: windows-2019
-            rid: win-x64
+          - rid: win-x64
             artifact: BackupManager-windows-x64.zip
-          - os: ubuntu-latest
-            rid: linux-x64
+            installer: packaging/BackupManager-Setup.exe
+          - rid: linux-x64
             artifact: BackupManager-linux-x64.tar.gz
+            installer: ""
 
     steps:
       - name: Checkout code
@@ -39,17 +39,26 @@ jobs:
           dotnet publish BackupManager.csproj -c Release -r ${{ matrix.rid }}
           --self-contained -o ./publish
 
+      - name: Install NSIS and zip
+        if: matrix.rid == 'win-x64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nsis zip
+
+      - name: Build Windows installer
+        if: matrix.rid == 'win-x64'
+        run: makensis -DPUBLISH_DIR="$PWD/publish/win-x64" packaging/installer.nsi
+
       - name: Package (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: Compress-Archive -Path ./publish/* -DestinationPath ${{ matrix.artifact }}
+        if: matrix.rid == 'win-x64'
+        run: cd publish && zip -r "../${{ matrix.artifact }}" . && cd ..
 
       - name: Package (Linux)
-        if: runner.os == 'Linux'
-        run: tar -czf ${{ matrix.artifact }} -C ./publish .
+        if: matrix.rid == 'linux-x64'
+        run: tar -czf "${{ matrix.artifact }}" -C ./publish .
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.artifact }}
+          files: ${{ matrix.rid == 'win-x64' && 'BackupManager-windows-x64.zip,packaging/BackupManager-Setup.exe' || 'BackupManager-linux-x64.tar.gz' }}
           generate_release_notes: true

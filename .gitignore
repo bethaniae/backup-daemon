@@ -14,3 +14,8 @@ Thumbs.db
 
 ## Logs
 *.log
+
+## Generated installer
+BackupManager-Setup.exe
+packaging/*.exe
+
