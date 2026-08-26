@@ -111,13 +111,113 @@ public class NotificationService : INotificationService
         if (!OperatingSystem.IsWindows() || _registered)
             return;
         _registered = true;
-        // Only set the process App User Model ID. Creating a Start Menu shortcut
-        // with the AUMID used to be done here via raw COM PInvoke, but that call
-        // could native-crash on some systems; the installer now owns the shortcut,
-        // so we keep just this safe call.
+        // A desktop (non-packaged) app can only raise Action Center toasts if a
+        // Start Menu shortcut exists whose System.AppUserModel.ID equals our AUMID.
+        // Without it, CreateToastNotifier(AppId) silently drops every toast.
         try { SetCurrentProcessExplicitAppUserModelID(AppId); } catch { }
+        try { EnsureStartMenuShortcut(); } catch { }
+    }
+
+    private static void EnsureStartMenuShortcut()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        var exe = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(exe))
+            return;
+        var programs = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs");
+        Directory.CreateDirectory(programs);
+        var lnk = Path.Combine(programs, "BackupManager.lnk");
+        if (File.Exists(lnk))
+            return;
+
+        var clsidType = Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046"))!;
+        var link = (IShellLinkW)Activator.CreateInstance(clsidType)!;
+        link.SetPath(exe);
+        link.SetWorkingDirectory(Path.GetDirectoryName(exe)!);
+        link.SetDescription("Backup Manager");
+        link.SetIconLocation(exe, 0);
+        ((IPersistFile)link).Save(lnk, true);
+
+        var store = (IPropertyStore)link;
+        var pv = new PropVariant { vt = 31 /*VT_LPWSTR*/, data = Marshal.StringToCoTaskMemUni(AppId) };
+        var key = AppUserModelIdKey;
+        store.SetValue(ref key, ref pv);
+        store.Commit();
+        Marshal.FreeCoTaskMem(pv.data);
     }
 
     [DllImport("shell32", CharSet = CharSet.Unicode, PreserveSig = false)]
     private static extern void SetCurrentProcessExplicitAppUserModelID(string appId);
+
+    [ComImport, Guid("00021401-0000-0000-C000-000000000046"), ClassInterface(ClassInterfaceType.None)]
+    private class ShellLink { }
+
+    [ComImport, Guid("000214F4-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellLinkW
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cch, IntPtr pfd, int fFlags);
+        void GetIDList(out IntPtr ppidl);
+        void SetIDList(IntPtr pidl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cch);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cch);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cch);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+        void GetHotkey(out short pwHotkey);
+        void SetHotkey(short wHotkey);
+        void GetShowCmd(out int piShowCmd);
+        void SetShowCmd(int iShowCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIcon, int cch, out int piIcon);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIcon, int iIcon);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
+        void Resolve(IntPtr hwnd, int fFlags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+    }
+
+    [ComImport, Guid("0000010B-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IPersistFile
+    {
+        void GetClassID(out Guid pClassID);
+        int IsDirty();
+        void Load([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, int dwMode);
+        void Save([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, [MarshalAs(UnmanagedType.Bool)] bool fRemember);
+        void SaveCompleted([MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
+        void GetCurFile([MarshalAs(UnmanagedType.LPWStr)] out string ppszFileName);
+    }
+
+    [ComImport, Guid("886D8EEB-186F-4C41-9C11-11C1D7B7F2F2"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IPropertyStore
+    {
+        void GetCount(out int cProps);
+        void GetAt(int iProp, out PropertyKey pkey);
+        void GetValue(ref PropertyKey key, out PropVariant pv);
+        void SetValue(ref PropertyKey key, ref PropVariant pv);
+        void Commit();
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PropertyKey
+    {
+        public Guid fmtid;
+        public int pid;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PropVariant
+    {
+        public ushort vt;
+        public ushort wReserved1;
+        public ushort wReserved2;
+        public ushort wReserved3;
+        public IntPtr data;
+    }
+
+    private static readonly PropertyKey AppUserModelIdKey = new()
+    {
+        fmtid = new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"),
+        pid = 5
+    };
 }
