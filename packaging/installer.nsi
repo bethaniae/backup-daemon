@@ -2,8 +2,8 @@
 
 Name "Backup Manager"
 OutFile "BackupManager-Setup.exe"
-InstallDir "$LOCALAPPDATA\Programs\BackupManager"
-RequestExecutionLevel user
+InstallDir "$PROGRAMFILES\BackupManager"
+RequestExecutionLevel admin
 SetCompressor /SOLID lzma
 
 !insertmacro MUI_PAGE_DIRECTORY
@@ -16,7 +16,7 @@ SetCompressor /SOLID lzma
 
 Section "Install"
   SetOutPath "$INSTDIR"
-  File /r "${PUBLISH_DIR}"
+  File /r "${PUBLISH_DIR}/*"
 
   CreateDirectory "$SMPROGRAMS"
   CreateShortcut "$SMPROGRAMS\BackupManager.lnk" "$INSTDIR\BackupManager.exe"
