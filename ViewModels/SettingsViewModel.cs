@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Avalonia.Platform.Storage;
 using BackupManager.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -114,6 +115,25 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
     {
         try
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Run", true);
+                if (key is null)
+                    return;
+                var exe = Environment.ProcessPath ?? "";
+                if (StartWithOs)
+                {
+                    if (!string.IsNullOrEmpty(exe))
+                        key.SetValue("BackupManager", exe);
+                }
+                else
+                {
+                    key.DeleteValue("BackupManager", false);
+                }
+                return;
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 var autostart = Path.Combine(
