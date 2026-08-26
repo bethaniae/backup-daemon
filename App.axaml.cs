@@ -82,8 +82,9 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
 
         // The tray icon is the persistent host. The window is shown on startup only
-        // when there is no tray to interact with, or the user opted to show it.
-        if (!TrayAvailable || !main.StartHidden)
+        // when there is no tray to interact with and the user didn't ask for a
+        // tray-only launch (either explicitly, or via auto-start on login).
+        if (!TrayAvailable || (!main.StartHidden && !config.Config.Settings.StartWithOs))
             MainWindowRef?.Show();
     }
 
