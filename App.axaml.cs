@@ -73,6 +73,12 @@ public partial class App : Application
         var scheduler = Services.GetRequiredService<ISchedulerService>();
         scheduler.Start();
 
+        if (OperatingSystem.IsWindows())
+        {
+            try { Services.GetRequiredService<INotificationService>().Register(); }
+            catch { }
+        }
+
         base.OnFrameworkInitializationCompleted();
 
         // The tray icon is the persistent host. The window is shown on startup only
