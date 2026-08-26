@@ -11,7 +11,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE "English"
 
 !ifndef PUBLISH_DIR
-  !define PUBLISH_DIR "publish/win-x64"
+  !define PUBLISH_DIR "publish"
 !endif
 
 Section "Install"

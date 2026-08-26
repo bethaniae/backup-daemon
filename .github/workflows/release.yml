@@ -47,7 +47,7 @@ jobs:
 
       - name: Build Windows installer
         if: matrix.rid == 'win-x64'
-        run: makensis -DPUBLISH_DIR="$PWD/publish/win-x64" packaging/installer.nsi
+        run: makensis -DPUBLISH_DIR="$PWD/publish" packaging/installer.nsi
 
       - name: Package (Windows)
         if: matrix.rid == 'win-x64'
