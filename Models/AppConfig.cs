@@ -4,6 +4,7 @@ public class RepositoryConfig
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "My Repository";
+    public string LocalPath { get; set; } = "";
     public string Location { get; set; } = "";
     public string Password { get; set; } = "";
     public string? Notes { get; set; }
@@ -14,7 +15,6 @@ public class BackupJob
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "Daily Backup";
     public string RepositoryId { get; set; } = "";
-    public List<string> Paths { get; set; } = new();
     public List<string> Excludes { get; set; } = new();
     public List<string> Tags { get; set; } = new();
     public bool Enabled { get; set; } = true;

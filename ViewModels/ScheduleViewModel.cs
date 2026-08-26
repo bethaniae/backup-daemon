@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Avalonia.Platform.Storage;
 using BackupManager.Models;
 using BackupManager.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -31,7 +30,7 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
     private string _repositoryId = "";
 
     [ObservableProperty]
-    private string _pathsText = "";
+    private string _localPathPreview = "";
 
     [ObservableProperty]
     private string _excludesText = "";
@@ -73,17 +72,22 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
     {
         if (value is null)
         {
-            JobName = ""; PathsText = ""; ExcludesText = ""; TagsText = "";
+            JobName = ""; LocalPathPreview = ""; ExcludesText = ""; TagsText = "";
             ScheduleTime = "08:30"; Enabled = true; RepositoryId = "";
             return;
         }
         JobName = value.Name;
         RepositoryId = value.RepositoryId;
-        PathsText = string.Join("\n", value.Paths);
+        LocalPathPreview = Repositories.FirstOrDefault(r => r.Id == value.RepositoryId)?.LocalPath ?? "";
         ExcludesText = string.Join("\n", value.Excludes);
         TagsText = string.Join(", ", value.Tags);
         ScheduleTime = value.ScheduleTime.ToString(@"hh\:mm");
         Enabled = value.Enabled;
+    }
+
+    partial void OnRepositoryIdChanged(string value)
+    {
+        LocalPathPreview = Repositories.FirstOrDefault(r => r.Id == value)?.LocalPath ?? "";
     }
 
     [RelayCommand]
@@ -92,7 +96,7 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
         Selected = null;
         JobName = "Daily Backup";
         RepositoryId = Repositories.FirstOrDefault()?.Id ?? "";
-        PathsText = "";
+        LocalPathPreview = Repositories.FirstOrDefault()?.LocalPath ?? "";
         ExcludesText = "";
         TagsText = "";
         ScheduleTime = "08:30";
@@ -113,22 +117,21 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
             Status = "Choose a repository.";
             return;
         }
+        var repo = Repositories.FirstOrDefault(r => r.Id == RepositoryId);
+        if (repo is null || string.IsNullOrWhiteSpace(repo.LocalPath))
+        {
+            Status = "Set the local copy folder on the repository first.";
+            return;
+        }
         if (!TimeSpan.TryParse(ScheduleTime, out var time))
         {
             Status = "Schedule time must be HH:mm (e.g. 08:30).";
-            return;
-        }
-        var paths = PathsText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-        if (paths.Count == 0)
-        {
-            Status = "Add at least one folder to back up.";
             return;
         }
 
         var job = Selected ?? new BackupJob();
         job.Name = JobName;
         job.RepositoryId = RepositoryId;
-        job.Paths = paths;
         job.Excludes = ExcludesText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         job.Tags = TagsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         job.ScheduleTime = time;
@@ -147,7 +150,6 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
             {
                 existing.Name = job.Name;
                 existing.RepositoryId = job.RepositoryId;
-                existing.Paths = job.Paths;
                 existing.Excludes = job.Excludes;
                 existing.Tags = job.Tags;
                 existing.ScheduleTime = job.ScheduleTime;
@@ -168,23 +170,6 @@ public partial class ScheduleViewModel : ViewModelBase, IRefreshable
         _config.Save();
         Selected = null;
         Status = "Job removed.";
-    }
-
-    [RelayCommand]
-    private async Task AddPathAsync()
-    {
-        var window = App.MainWindowRef;
-        if (window is null)
-            return;
-        var folders = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = "Add folder to back up",
-            AllowMultiple = true
-        });
-        var lines = PathsText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-        foreach (var f in folders)
-            lines.Add(f.Path.LocalPath);
-        PathsText = string.Join("\n", lines);
     }
 
     [RelayCommand]

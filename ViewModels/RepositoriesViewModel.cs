@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Platform.Storage;
 using BackupManager.Models;
 using BackupManager.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,6 +22,9 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
 
     [ObservableProperty]
     private string _name = "";
+
+    [ObservableProperty]
+    private string _localPath = "";
 
     [ObservableProperty]
     private string _location = "";
@@ -54,10 +58,11 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
     {
         if (value is null)
         {
-            Name = Location = Password = Notes = "";
+            Name = LocalPath = Location = Password = Notes = "";
             return;
         }
         Name = value.Name;
+        LocalPath = value.LocalPath;
         Location = value.Location;
         Password = value.Password;
         Notes = value.Notes ?? "";
@@ -68,6 +73,7 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
     {
         Selected = null;
         Name = "New Repository";
+        LocalPath = "";
         Location = "";
         Password = "";
         Notes = "";
@@ -75,15 +81,36 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
     }
 
     [RelayCommand]
+    private async Task PickLocalFolderAsync()
+    {
+        var window = App.MainWindowRef;
+        if (window is null)
+            return;
+        var folders = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Choose the local copy folder to sync",
+            AllowMultiple = false
+        });
+        if (folders.Count > 0)
+            LocalPath = folders[0].Path.LocalPath;
+    }
+
+    [RelayCommand]
     private void Save()
     {
         if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Location))
         {
-            Status = "Name and location are required.";
+            Status = "Name and repository location are required.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(LocalPath))
+        {
+            Status = "Set the local copy folder (the folder to keep synced).";
             return;
         }
         var repo = Selected ?? new RepositoryConfig();
         repo.Name = Name;
+        repo.LocalPath = LocalPath;
         repo.Location = Location;
         repo.Password = Password;
         repo.Notes = Notes;
@@ -149,13 +176,14 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
         if (Selected is null)
             return;
         Busy = true;
-        Status = "Initializing repository…";
+        Status = "Initializing remote repository… (your local copy is not touched)";
         try
         {
-            await _restic.InitRepositoryAsync(Selected);
+            var result = await _restic.InitRepositoryAsync(Selected);
             _config.Save();
-            Status = "Repository initialized.";
-            _notify.Show("Repository ready", $"{Selected.Name} is initialized.", false);
+            Status = result.Message;
+            if (result.Success)
+                _notify.Show("Repository", $"{Selected.Name}: {result.Message}", false);
         }
         catch (System.Exception ex)
         {

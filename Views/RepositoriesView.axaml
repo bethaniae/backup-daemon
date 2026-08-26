@@ -28,7 +28,11 @@
 
         <StackPanel Grid.Column="1" Grid.Row="1" Spacing="8" Margin="14,0,0,0">
             <TextBox PlaceholderText="Friendly name" Text="{Binding Name}" />
-            <TextBox PlaceholderText="Repository location (e.g. /backups or sftp:user@host:/path)" Text="{Binding Location}" />
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                <TextBox Grid.Column="0" PlaceholderText="Local copy folder (the folder to keep in sync)" Text="{Binding LocalPath}" />
+                <Button Grid.Column="1" Content="Browse…" Command="{Binding PickLocalFolderCommand}" Margin="6,0,0,0" />
+            </Grid>
+            <TextBox PlaceholderText="Repository location (remote, e.g. /backups or sftp:user@host:/path)" Text="{Binding Location}" />
             <TextBox PlaceholderText="Password" Text="{Binding Password}" PasswordChar="*" />
             <TextBox PlaceholderText="Notes (optional)" Text="{Binding Notes}" />
             <StackPanel Orientation="Horizontal" Spacing="8">

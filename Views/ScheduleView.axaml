@@ -41,9 +41,11 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBox PlaceholderText="Folders to back up (one per line)" Text="{Binding PathsText}"
-                     AcceptsReturn="True" Height="90" />
-            <Button Content="Add folder…" Command="{Binding AddPathCommand}" HorizontalAlignment="Left" />
+            <TextBlock Text="Local copy folder (from repository):" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+            <TextBox Text="{Binding LocalPathPreview}" IsReadOnly="True" />
+            <TextBlock Text="The job syncs the repository's local copy folder to its remote repository."
+                       FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
             <TextBox PlaceholderText="Excludes (one per line, optional)" Text="{Binding ExcludesText}"
                      AcceptsReturn="True" Height="60" />
             <TextBox PlaceholderText="Tags (comma separated, optional)" Text="{Binding TagsText}" />

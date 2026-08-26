@@ -9,7 +9,7 @@ public interface IResticService
 {
     Task<string> GetVersionAsync(CancellationToken token = default);
     Task<bool> IsRepositoryInitializedAsync(RepositoryConfig repo, CancellationToken token = default);
-    Task InitRepositoryAsync(RepositoryConfig repo, CancellationToken token = default);
+    Task<InitResult> InitRepositoryAsync(RepositoryConfig repo, CancellationToken token = default);
     Task<List<SnapshotInfo>> GetSnapshotsAsync(RepositoryConfig repo, CancellationToken token = default);
     Task<(bool Success, long BytesAdded)> BackupAsync(
         RepositoryConfig repo, BackupJob job, IProgress<BackupProgress> progress, CancellationToken token);
@@ -18,6 +18,8 @@ public interface IResticService
     Task CheckAsync(RepositoryConfig repo, IProgress<string> progress, CancellationToken token);
     Task<List<string>> ListSnapshotContentsAsync(RepositoryConfig repo, string snapshotId, CancellationToken token);
 }
+
+public record InitResult(bool Success, bool AlreadyExisted, string Message);
 
 public class ResticService : IResticService
 {
@@ -87,14 +89,24 @@ public class ResticService : IResticService
         }
     }
 
-    public async Task InitRepositoryAsync(RepositoryConfig repo, CancellationToken token = default)
+    public async Task<InitResult> InitRepositoryAsync(RepositoryConfig repo, CancellationToken token = default)
     {
+        if (string.IsNullOrWhiteSpace(repo.Location) || string.IsNullOrWhiteSpace(repo.Password))
+            return new InitResult(false, false, "Repository location and password are required.");
+
+        // Non-destructive by design: never overwrite or re-initialize an existing
+        // repository. If something already exists at the remote location we leave it
+        // untouched and just report that. The local copy folder is never touched here.
+        if (await IsRepositoryInitializedAsync(repo, token))
+            return new InitResult(true, true, "A repository already exists at this location. Nothing was changed.");
+
         var psi = BuildStartInfo(repo, "init");
         using var proc = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start restic.");
         var err = await proc.StandardError.ReadToEndAsync(token);
         await proc.WaitForExitAsync(token);
         if (proc.ExitCode != 0)
-            throw new InvalidOperationException(err.Trim());
+            return new InitResult(false, false, err.Trim());
+        return new InitResult(true, false, "Repository initialized.");
     }
 
     public async Task<List<SnapshotInfo>> GetSnapshotsAsync(RepositoryConfig repo, CancellationToken token = default)
@@ -115,8 +127,17 @@ public class ResticService : IResticService
         RepositoryConfig repo, BackupJob job, IProgress<BackupProgress> progress, CancellationToken token)
     {
         var args = new List<string> { "backup", "--json" };
-        foreach (var p in job.Paths)
-            args.Add(p);
+        if (string.IsNullOrWhiteSpace(repo.LocalPath) || !Directory.Exists(repo.LocalPath))
+        {
+            progress.Report(new BackupProgress
+            {
+                Finished = true,
+                Error = true,
+                Message = "Local copy folder is missing or not set on the repository."
+            });
+            return (false, 0);
+        }
+        args.Add(repo.LocalPath);
         foreach (var e in job.Excludes)
             args.AddRange(new[] { "--exclude", e });
         foreach (var t in job.Tags)
