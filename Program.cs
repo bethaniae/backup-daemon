@@ -8,17 +8,30 @@ namespace BackupManager;
 
 sealed class Program
 {
-    const string CrashLog = "/tmp/backupmanager_crash.log";
-    const string TraceLog = "/tmp/backupmanager_trace.log";
+    static readonly string LogDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BackupManager");
+    static readonly string CrashLog = Path.Combine(LogDir, "crash.log");
+    static readonly string TraceLog = Path.Combine(LogDir, "trace.log");
+
+    static void LogCrash(string kind, object ex)
+    {
+        try
+        {
+            Directory.CreateDirectory(LogDir);
+            File.AppendAllText(CrashLog, $"[{DateTime.Now:u}] {kind}: {ex}\n");
+        }
+        catch { }
+    }
 
     [STAThread]
     public static int Main(string[] args)
     {
+        try { Directory.CreateDirectory(LogDir); } catch { }
         Trace.Listeners.Add(new TextWriterTraceListener(TraceLog));
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-            File.AppendAllText(CrashLog, $"[{DateTime.Now}] Unhandled: {e.ExceptionObject}\n");
+            LogCrash("Unhandled", e.ExceptionObject);
         TaskScheduler.UnobservedTaskException += (_, e) =>
-            File.AppendAllText(CrashLog, $"[{DateTime.Now}] UnobservedTask: {e.Exception}\n");
+            LogCrash("UnobservedTask", e.Exception);
 
         try
         {
@@ -27,7 +40,7 @@ sealed class Program
         }
         catch (Exception ex)
         {
-            File.AppendAllText(CrashLog, $"[{DateTime.Now}] Startup: {ex}\n");
+            LogCrash("Startup", ex);
             Console.Error.WriteLine(ex);
             return 1;
         }
