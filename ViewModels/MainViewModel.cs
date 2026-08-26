@@ -36,7 +36,7 @@ public partial class MainViewModel : ObservableObject
     private bool _isSchedulePaused;
 
     [ObservableProperty]
-    private bool _closeToTray;
+    private bool _startHidden;
 
     [ObservableProperty]
     private string _trayTooltip = "Backup Manager";
@@ -53,7 +53,7 @@ public partial class MainViewModel : ObservableObject
         _restic = restic;
         _notify = notify;
         _state = state;
-        _closeToTray = config.Config.Settings.CloseToTray;
+        _startHidden = config.Config.Settings.StartHidden;
         _isSchedulePaused = scheduler.IsPaused;
 
         NavItems.Add(new NavItem { Name = "Dashboard", Icon = "🏠", ViewModelType = typeof(DashboardViewModel) });
@@ -89,9 +89,9 @@ public partial class MainViewModel : ObservableObject
         CurrentView = vm;
     }
 
-    partial void OnCloseToTrayChanged(bool value)
+    partial void OnStartHiddenChanged(bool value)
     {
-        _config.Config.Settings.CloseToTray = value;
+        _config.Config.Settings.StartHidden = value;
         _config.Save();
     }
 

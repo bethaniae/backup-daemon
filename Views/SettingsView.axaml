@@ -32,7 +32,7 @@
             </Grid>
         </StackPanel>
 
-        <CheckBox Content="Close to tray instead of quitting" IsChecked="{Binding CloseToTray}" />
+        <CheckBox Content="Launch in the system tray (don't open the window on start)" IsChecked="{Binding StartHidden}" />
         <CheckBox Content="Show notifications" IsChecked="{Binding NotificationsEnabled}" />
         <CheckBox Content="Start Backup Manager when I log in" IsChecked="{Binding StartWithOs}" />
 

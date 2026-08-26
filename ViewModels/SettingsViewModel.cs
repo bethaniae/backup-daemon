@@ -18,7 +18,7 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
     private string _resticPath = "restic";
 
     [ObservableProperty]
-    private bool _closeToTray = true;
+    private bool _startHidden;
 
     [ObservableProperty]
     private bool _notificationsEnabled = true;
@@ -46,7 +46,7 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
     {
         var s = _config.Config.Settings;
         ResticPath = s.ResticPath;
-        CloseToTray = s.CloseToTray;
+        StartHidden = s.StartHidden;
         NotificationsEnabled = s.NotificationsEnabled;
         StartWithOs = s.StartWithOs;
         DownloadFolder = s.DownloadFolder ?? "";
@@ -70,7 +70,7 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
     {
         var s = _config.Config.Settings;
         s.ResticPath = string.IsNullOrWhiteSpace(ResticPath) ? "restic" : ResticPath;
-        s.CloseToTray = CloseToTray;
+        s.StartHidden = StartHidden;
         s.NotificationsEnabled = NotificationsEnabled;
         s.StartWithOs = StartWithOs;
         s.DownloadFolder = DownloadFolder;

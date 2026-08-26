@@ -46,16 +46,25 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var window = new MainWindow { DataContext = main };
             MainWindowRef = window;
             desktop.MainWindow = window;
-            desktop.ShutdownRequested += (_, e) =>
+            window.Closing += (_, e) =>
             {
-                if (!main.ForceClose && main.CloseToTray && TrayAvailable && window.IsVisible)
+                // The GUI is a detachable view. Unless an explicit quit was requested,
+                // closing it returns to the tray instead of terminating the app.
+                if (main.ForceClose)
+                    return;
+                if (!TrayAvailable)
                 {
-                    e.Cancel = true;
-                    window.Hide();
+                    // No tray to return to: quitting is the only sane option.
+                    main.ForceClose = true;
+                    desktop.Shutdown();
+                    return;
                 }
+                e.Cancel = true;
+                window.Hide();
             };
         }
 
@@ -65,7 +74,11 @@ public partial class App : Application
         scheduler.Start();
 
         base.OnFrameworkInitializationCompleted();
-        MainWindowRef?.Show();
+
+        // The tray icon is the persistent host. The window is shown on startup only
+        // when there is no tray to interact with, or the user opted to show it.
+        if (!TrayAvailable || !main.StartHidden)
+            MainWindowRef?.Show();
     }
 
     private void TryCreateTrayIcon(MainViewModel main)
