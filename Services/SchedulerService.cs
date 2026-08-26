@@ -13,7 +13,7 @@ public interface ISchedulerService
     bool IsPaused { get; set; }
     void Start();
     void Stop();
-    Task RunJobAsync(BackupJob job, CancellationToken token = default);
+    Task RunJobAsync(BackupJob job, bool manual = false, CancellationToken token = default);
     event EventHandler<RunLogEntry>? RunCompleted;
     event EventHandler<BackupStateChangedArgs>? BackupStateChanged;
 }
@@ -68,7 +68,7 @@ public class SchedulerService : ISchedulerService
         }
     }
 
-    public async Task RunJobAsync(BackupJob job, CancellationToken token = default)
+    public async Task RunJobAsync(BackupJob job, bool manual = false, CancellationToken token = default)
     {
         lock (_lock)
         {
@@ -83,7 +83,7 @@ public class SchedulerService : ISchedulerService
             var repo = _config.Config.Repositories.FirstOrDefault(r => r.Id == job.RepositoryId);
             if (repo is null)
             {
-                Finish(job, false, "Repository not found.", TimeSpan.Zero, 0, token);
+                Finish(job, false, "Repository not found.", TimeSpan.Zero, 0, manual, token);
                 return;
             }
 
@@ -96,15 +96,15 @@ public class SchedulerService : ISchedulerService
 
             var (success, bytesAdded) = await _restic.BackupAsync(repo, job, progress, token);
             var duration = DateTime.UtcNow - started;
-            Finish(job, success, success ? "Backup completed." : "Backup failed.", duration, bytesAdded, token);
+            Finish(job, success, success ? "Backup completed." : "Backup failed.", duration, bytesAdded, manual, token);
         }
         catch (OperationCanceledException)
         {
-            Finish(job, false, "Backup cancelled.", TimeSpan.Zero, 0, token);
+            Finish(job, false, "Backup cancelled.", TimeSpan.Zero, 0, manual, token);
         }
         catch (Exception ex)
         {
-            Finish(job, false, ex.Message, TimeSpan.Zero, 0, token);
+            Finish(job, false, ex.Message, TimeSpan.Zero, 0, manual, token);
         }
         finally
         {
@@ -116,7 +116,7 @@ public class SchedulerService : ISchedulerService
         }
     }
 
-    private void Finish(BackupJob job, bool success, string detail, TimeSpan duration, long bytesAdded, CancellationToken token)
+    private void Finish(BackupJob job, bool success, string detail, TimeSpan duration, long bytesAdded, bool manual, CancellationToken token)
     {
         job.LastRunUtc = DateTime.UtcNow;
         if (success)
@@ -137,8 +137,28 @@ public class SchedulerService : ISchedulerService
 
         if (_config.Config.Settings.NotificationsEnabled)
         {
-            _notify.Show(success ? "Backup complete" : "Backup failed",
-                $"{job.Name}: {detail}", !success);
+            var (title, body) = BuildSyncMessage(job, repo, success, detail, manual);
+            _notify.Show(title, body, !success);
         }
+    }
+
+    private static (string Title, string Body) BuildSyncMessage(
+        BackupJob job, RepositoryConfig? repo, bool success, string detail, bool manual)
+    {
+        var repoName = repo?.Name ?? "the repository";
+        if (manual)
+        {
+            return success
+                ? ("Manual sync complete",
+                   $"Your files were backed up successfully to '{repoName}'.")
+                : ("Manual sync failed",
+                   $"The backup to '{repoName}' did not finish: {detail}");
+        }
+
+        return success
+            ? ("Scheduled backup complete",
+               $"'{job.Name}' was backed up successfully to '{repoName}'.")
+            : ("Scheduled backup failed",
+               $"'{job.Name}' could not be backed up: {detail}");
     }
 }

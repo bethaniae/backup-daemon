@@ -135,7 +135,7 @@ public partial class MainViewModel : ObservableObject
             _notify.Show("Nothing to sync", "Add a backup job in the Schedule tab first.", true);
             return;
         }
-        await _scheduler.RunJobAsync(job);
+        await _scheduler.RunJobAsync(job, manual: true);
     }
 
     [RelayCommand]
