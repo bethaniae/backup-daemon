@@ -16,9 +16,11 @@ jobs:
       matrix:
         include:
           - rid: win-x64
+            tfm: net10.0-windows10.0.19041.0
             artifact: BackupManager-windows-x64.zip
             installer: packaging/BackupManager-Setup.exe
           - rid: linux-x64
+            tfm: net10.0
             artifact: BackupManager-linux-x64.tar.gz
             installer: ""
 
@@ -36,8 +38,8 @@ jobs:
 
       - name: Publish (self-contained, ${{ matrix.rid }})
         run: >
-          dotnet publish BackupManager.csproj -c Release -r ${{ matrix.rid }}
-          --self-contained -o ./publish
+          dotnet publish BackupManager.csproj -c Release -f ${{ matrix.tfm }}
+          -r ${{ matrix.rid }} --self-contained -o ./publish
 
       - name: Install NSIS and zip
         if: matrix.rid == 'win-x64'
