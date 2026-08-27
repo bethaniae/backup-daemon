@@ -114,8 +114,22 @@ public class NotificationService : INotificationService
         // A desktop (non-packaged) app can only raise Action Center toasts if a
         // Start Menu shortcut exists whose System.AppUserModel.ID equals our AUMID.
         // Without it, CreateToastNotifier(AppId) silently drops every toast.
-        try { SetCurrentProcessExplicitAppUserModelID(AppId); } catch { }
-        try { EnsureStartMenuShortcut(); } catch { }
+        try { SetCurrentProcessExplicitAppUserModelID(AppId); }
+        catch (Exception ex) { LogNotify($"SetAUMID failed: {ex}"); }
+        try { EnsureStartMenuShortcut(); }
+        catch (Exception ex) { LogNotify($"Shortcut failed: {ex}"); }
+    }
+
+    private static void LogNotify(string message)
+    {
+        try
+        {
+            var dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BackupManager");
+            Directory.CreateDirectory(dir);
+            File.AppendAllText(Path.Combine(dir, "notify.log"), $"[{DateTime.Now:u}] {message}\n");
+        }
+        catch { }
     }
 
     private static void EnsureStartMenuShortcut()
@@ -132,8 +146,7 @@ public class NotificationService : INotificationService
         if (File.Exists(lnk))
             return;
 
-        var clsidType = Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046"))!;
-        var link = (IShellLinkW)Activator.CreateInstance(clsidType)!;
+        var link = (IShellLinkW)new ShellLink();
         link.SetPath(exe);
         link.SetWorkingDirectory(Path.GetDirectoryName(exe)!);
         link.SetDescription("Backup Manager");
