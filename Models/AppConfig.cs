@@ -28,6 +28,7 @@ public class AppSettings
     public string ResticPath { get; set; } = "restic";
     public bool StartWithOs { get; set; }
     public bool StartHidden { get; set; }
+    public bool ActivateDucky { get; set; }
     public bool NotificationsEnabled { get; set; } = true;
     public string? DownloadFolder { get; set; }
 }

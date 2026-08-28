@@ -28,6 +28,9 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
     private bool _startWithOs;
 
     [ObservableProperty]
+    private bool _activateDucky;
+
+    [ObservableProperty]
     private string _downloadFolder = "";
 
     [ObservableProperty]
@@ -50,6 +53,7 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
         StartHidden = s.StartHidden;
         NotificationsEnabled = s.NotificationsEnabled;
         StartWithOs = s.StartWithOs;
+        ActivateDucky = s.ActivateDucky;
         DownloadFolder = s.DownloadFolder ?? "";
         _ = LoadVersionAsync();
     }
@@ -74,6 +78,7 @@ public partial class SettingsViewModel : ViewModelBase, IRefreshable
         s.StartHidden = StartHidden;
         s.NotificationsEnabled = NotificationsEnabled;
         s.StartWithOs = StartWithOs;
+        s.ActivateDucky = ActivateDucky;
         s.DownloadFolder = DownloadFolder;
         _config.Save();
         ApplyAutostart();

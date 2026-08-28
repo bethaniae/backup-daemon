@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BackupManager.Views.AnimatedMascot"
+             ClipToBounds="True"
+             IsHitTestVisible="False">
+    <Canvas x:Name="Host" ClipToBounds="True" Background="Transparent">
+        <Grid x:Name="Placer">
+            <Image x:Name="MascotImage"
+                   Stretch="Fill"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top" />
+        </Grid>
+    </Canvas>
+</UserControl>

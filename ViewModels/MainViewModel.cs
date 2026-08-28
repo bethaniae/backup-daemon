@@ -41,6 +41,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _trayTooltip = "Backup Manager";
 
+    [ObservableProperty]
+    private bool _duckVisible;
+
     public ObservableCollection<NavItem> NavItems { get; } = new();
 
     public bool ForceClose { get; set; }
@@ -72,6 +75,9 @@ public partial class MainViewModel : ObservableObject
         };
         _scheduler.RunCompleted += (_, e) => _state.RaiseDataChanged();
         _notify.NotificationRequested += (_, e) => { };
+
+        _duckVisible = _config.Config.Settings.ActivateDucky;
+        _config.SettingsChanged += (_, _) => DuckVisible = _config.Config.Settings.ActivateDucky;
 
         _ = CheckResticAsync();
     }

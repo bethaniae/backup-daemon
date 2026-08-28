@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:BackupManager.ViewModels"
+        xmlns:views="using:BackupManager.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
@@ -43,8 +44,12 @@
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Column="1" Padding="18">
-            <ContentControl Content="{Binding CurrentView}" />
-        </ScrollViewer>
+        <Grid Grid.Column="1">
+            <ScrollViewer Padding="18">
+                <ContentControl Content="{Binding CurrentView}" />
+            </ScrollViewer>
+
+            <views:AnimatedMascot Height="76" VerticalAlignment="Bottom" IsVisible="{Binding DuckVisible}" />
+        </Grid>
     </Grid>
 </Window>

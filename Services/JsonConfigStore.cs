@@ -8,6 +8,7 @@ public interface IConfigStore
     AppConfig Config { get; }
     void Load();
     void Save();
+    event EventHandler? SettingsChanged;
 }
 
 public class JsonConfigStore : IConfigStore
@@ -18,6 +19,8 @@ public class JsonConfigStore : IConfigStore
         WriteIndented = true,
         PropertyNameCaseInsensitive = true
     };
+
+    public event EventHandler? SettingsChanged;
 
     public AppConfig Config { get; private set; } = new();
 
@@ -52,5 +55,6 @@ public class JsonConfigStore : IConfigStore
     {
         var json = JsonSerializer.Serialize(Config, _options);
         File.WriteAllText(_filePath, json);
+        SettingsChanged?.Invoke(this, EventArgs.Empty);
     }
 }
