@@ -141,8 +141,14 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
         if (Selected is null)
             return;
         Repositories.Remove(Selected);
-        _config.Config.Repositories.RemoveAll(r => r.Id == Selected.Id);
-        _config.Config.Jobs.RemoveAll(j => j.RepositoryId == Selected.Id);
+        
+        Console.WriteLine(_config.Config.Repositories.Count);
+        Console.WriteLine(_config.Config.Jobs.Count);
+        _config.Config.Repositories.ForEach((r) => { Console.WriteLine(r); });
+        _config.Config.Jobs.ForEach((r) => { Console.WriteLine(r); });
+
+        _config.Config.Repositories.RemoveAll(r => r is null || r.Id == Selected.Id);
+        _config.Config.Jobs.RemoveAll(j => j is null || j.RepositoryId == Selected.Id);
         _config.Save();
         Selected = null;
         Status = "Repository removed.";

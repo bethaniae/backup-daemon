@@ -10,6 +10,18 @@ public partial class AppState : ObservableObject
     private bool _isBackingUp;
 
     [ObservableProperty]
+    private string _backupJobName = "";
+
+    [ObservableProperty]
+    private double _backupPercent;
+
+    [ObservableProperty]
+    private string _backupDetail = "";
+
+    [ObservableProperty]
+    private bool _backupIndeterminate;
+
+    [ObservableProperty]
     private string _statusMessage = "Ready";
 
     [ObservableProperty]

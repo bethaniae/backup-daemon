@@ -71,7 +71,27 @@ public partial class MainViewModel : ObservableObject
         _scheduler.BackupStateChanged += (_, e) =>
         {
             _state.IsBackingUp = e.IsRunning;
+            _state.BackupJobName = e.IsRunning ? e.JobName : "";
+            if (!e.IsRunning)
+            {
+                _state.BackupPercent = 0;
+                _state.BackupDetail = "";
+                _state.BackupIndeterminate = false;
+            }
             TrayTooltip = e.IsRunning ? $"Backing up: {e.JobName}" : "Backup Manager";
+        };
+        _scheduler.BackupProgressChanged += (_, p) =>
+        {
+            if (p.Finished)
+                return;
+            _state.BackupIndeterminate = p.BytesTotal <= 0 || p.Percent <= 0;
+            _state.BackupPercent = p.Percent;
+            var parts = new List<string>();
+            if (p.FilesTotal > 0)
+                parts.Add($"{p.FilesDone:N0} / {p.FilesTotal:N0} files");
+            if (!string.IsNullOrWhiteSpace(p.CurrentFile))
+                parts.Add(Path.GetFileName(p.CurrentFile));
+            _state.BackupDetail = parts.Count > 0 ? string.Join(" — ", parts) : "Preparing backup…";
         };
         _scheduler.RunCompleted += (_, e) => _state.RaiseDataChanged();
         _notify.NotificationRequested += (_, e) => { };

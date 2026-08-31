@@ -17,17 +17,31 @@
         <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                 CornerRadius="8" Padding="16">
             <StackPanel Spacing="6">
-                <TextBlock Text="{Binding StatusText}" FontSize="15" />
-                <TextBlock Text="{Binding LastBackupText}" FontSize="13"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <TextBlock Text="{Binding StatusText}" FontSize="15"
+                           IsVisible="{Binding !State.IsBackingUp}" />
                 <TextBlock Text="⚠ restic binary not found. Set its path in Settings."
                            Foreground="Red" FontSize="13" IsVisible="{Binding ResticMissing}" />
+
+                <StackPanel Spacing="6" IsVisible="{Binding State.IsBackingUp}">
+                    <TextBlock FontSize="15" FontWeight="SemiBold"
+                               Text="{Binding State.BackupJobName, StringFormat='Backing up {0}…'}" />
+                    <ProgressBar Maximum="100"
+                                 Value="{Binding State.BackupPercent}"
+                                 IsIndeterminate="{Binding State.BackupIndeterminate}"
+                                 MinHeight="10" />
+                    <TextBlock Text="{Binding State.BackupDetail}" FontSize="13"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
             </StackPanel>
         </Border>
 
         <StackPanel Orientation="Horizontal" Spacing="12">
-            <Button Content="Sync new data now" Command="{Binding SyncNowCommand}" FontSize="14" Padding="14,8" />
-            <Button Content="Pull a copy from a backup" Command="{Binding PullCopyCommand}" FontSize="14" Padding="14,8" />
+            <Button Content="Sync new data now" Command="{Binding SyncNowCommand}"
+                    FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190"
+                    IsEnabled="{Binding !State.IsBackingUp}" />
+            <Button Content="Pull a copy from a backup" Command="{Binding PullCopyCommand}"
+                    FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190" />
         </StackPanel>
 
         <TextBlock Text="Recent activity" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />

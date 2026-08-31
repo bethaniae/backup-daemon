@@ -16,6 +16,7 @@ public interface ISchedulerService
     Task RunJobAsync(BackupJob job, bool manual = false, CancellationToken token = default);
     event EventHandler<RunLogEntry>? RunCompleted;
     event EventHandler<BackupStateChangedArgs>? BackupStateChanged;
+    event EventHandler<BackupProgress>? BackupProgressChanged;
 }
 
 public class SchedulerService : ISchedulerService
@@ -31,6 +32,7 @@ public class SchedulerService : ISchedulerService
 
     public event EventHandler<RunLogEntry>? RunCompleted;
     public event EventHandler<BackupStateChangedArgs>? BackupStateChanged;
+    public event EventHandler<BackupProgress>? BackupProgressChanged;
 
     public SchedulerService(IConfigStore config, IResticService restic,
         INotificationService notify)
@@ -92,6 +94,7 @@ public class SchedulerService : ISchedulerService
             {
                 if (p.Error)
                     _notify.Show("Backup problem", p.Message, true);
+                BackupProgressChanged?.Invoke(this, p);
             });
 
             var (success, bytesAdded) = await _restic.BackupAsync(repo, job, progress, token);

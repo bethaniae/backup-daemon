@@ -16,6 +16,8 @@ public partial class DashboardViewModel : ViewModelBase, IRefreshable
 
     public event Action? RequestSnapshotsNavigation;
 
+    public AppState State { get; }
+
     [ObservableProperty]
     private string _statusText = "Welcome to Backup Manager";
 
@@ -35,6 +37,7 @@ public partial class DashboardViewModel : ViewModelBase, IRefreshable
         _scheduler = scheduler;
         _notify = notify;
         _state = state;
+        State = state;
     }
 
     public void Refresh()
@@ -48,9 +51,9 @@ public partial class DashboardViewModel : ViewModelBase, IRefreshable
             ? $"Last successful backup: {last.LastSuccessUtc.Value.ToLocalTime():g} ({last.Name})"
             : "No backups yet";
 
-        StatusText = _state.IsBackingUp
-            ? "A backup is currently running…"
-            : (ResticMissing ? "restic not found — set its path in Settings." : "Everything is up to date.");
+        StatusText = ResticMissing
+            ? "restic not found — set its path in Settings."
+            : "Everything is up to date.";
 
         RecentRuns = new ObservableCollection<RunLogEntry>(
             _state.RecentRuns.OrderByDescending(r => r.TimestampUtc).Take(20));
