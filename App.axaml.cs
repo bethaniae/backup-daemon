@@ -100,7 +100,7 @@ public partial class App : Application
             menu.Add(new NativeMenuItemSeparator());
             menu.Add(new NativeMenuItem { Header = "Quit", Command = main.ExitCommand });
 
-            var iconUri = new Uri("avares://BackupManager/Assets/avalonia-logo.ico", UriKind.Absolute);
+            var iconUri = new Uri("avares://BackupManager/Assets/logo.ico", UriKind.Absolute);
             using var iconStream = Avalonia.Platform.AssetLoader.Open(iconUri);
             var tray = new TrayIcon
             {

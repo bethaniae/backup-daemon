@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using Avalonia.Platform;
 using BackupManager.Models;
 
 #if WINDOWS
@@ -59,11 +60,14 @@ public class NotificationService : INotificationService
         // ToastNotificationManagerCompat (WCT 7.1.2) handles Win32 unpackaged apps
         // without requiring a Start Menu shortcut or AUMID registration. The toast
         // simply shows via the Windows Action Center.
-        new ToastContentBuilder()
+        var builder = new ToastContentBuilder()
             .AddArgument("action", "syncComplete")
             .AddText(title)
-            .AddText(message)
-            .Show();
+            .AddText(message);
+        var logo = GetLogoPath();
+        if (logo is not null)
+            builder.AddAppLogoOverride(new Uri(logo), ToastGenericAppLogoCrop.Default);
+        builder.Show();
 #else
         // No Windows notification backend in this build target; Linux never calls this.
 #endif
@@ -74,14 +78,45 @@ public class NotificationService : INotificationService
         var psi = new ProcessStartInfo
         {
             FileName = "notify-send",
-            ArgumentList = { "--app-name", "Backup Manager", title, message },
+            ArgumentList = { "--app-name", "Backup Manager" },
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+        var logo = GetLogoPath();
+        if (logo is not null)
+            psi.ArgumentList.Add($"--icon={logo}");
+        psi.ArgumentList.Add(title);
+        psi.ArgumentList.Add(message);
         using var proc = Process.Start(psi);
         proc?.WaitForExit(4000);
+    }
+
+    private static string? GetLogoPath()
+    {
+        try
+        {
+            // notify-send and the toast API both need a real file path, so unpack
+            // the embedded asset into the app-data dir on each call (cheap, and
+            // guarantees the on-disk copy always matches the embedded one).
+            var dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BackupManager");
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "logo.png");
+            // Always rewrite so a stale extracted copy (e.g. from before the
+            // asset was squared) can never linger.
+            using (var src = AssetLoader.Open(new Uri("avares://BackupManager/Assets/logo.png")))
+            using (var dst = File.Create(path))
+            {
+                src.CopyTo(dst);
+            }
+            return path;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public void Register() => RegisterWindows();
