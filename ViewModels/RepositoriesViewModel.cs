@@ -138,19 +138,15 @@ public partial class RepositoriesViewModel : ViewModelBase, IRefreshable
     [RelayCommand]
     private void Delete()
     {
-        if (Selected is null)
+        if (Selected is not { } repo)
             return;
-        Repositories.Remove(Selected);
-        
-        Console.WriteLine(_config.Config.Repositories.Count);
-        Console.WriteLine(_config.Config.Jobs.Count);
-        _config.Config.Repositories.ForEach((r) => { Console.WriteLine(r); });
-        _config.Config.Jobs.ForEach((r) => { Console.WriteLine(r); });
 
-        _config.Config.Repositories.RemoveAll(r => r is null || r.Id == Selected.Id);
-        _config.Config.Jobs.RemoveAll(j => j is null || j.RepositoryId == Selected.Id);
-        _config.Save();
+        var id = repo.Id;
         Selected = null;
+        Repositories.Remove(repo);
+        _config.Config.Repositories.RemoveAll(r => r is null || r.Id == id);
+        _config.Config.Jobs.RemoveAll(j => j is null || j.RepositoryId == id);
+        _config.Save();
         Status = "Repository removed.";
     }
 
