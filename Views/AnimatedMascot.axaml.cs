@@ -110,6 +110,17 @@ public partial class AnimatedMascot : UserControl
         else
         {
             _x = Math.Clamp(_x, _minX, _maxX);
+            if (_walking)
+            {
+                _target = Math.Clamp(_target, _minX, _maxX);
+                // If the resize left us at or past the (now clamped) target,
+                // arrive there immediately instead of walking out of bounds.
+                if ((_direction > 0 && _x >= _target) || (_direction < 0 && _x <= _target))
+                {
+                    _x = _target;
+                    StartIdle();
+                }
+            }
             Place();
         }
     }
