@@ -19,8 +19,8 @@ Section "Install"
   File /r "${PUBLISH_DIR}/*"
 
   CreateDirectory "$SMPROGRAMS"
-  CreateShortcut "$SMPROGRAMS\BackupManager.lnk" "$INSTDIR\BackupManager.exe"
-  CreateShortcut "$DESKTOP\BackupManager.lnk" "$INSTDIR\BackupManager.exe"
+  CreateShortcut "$SMPROGRAMS\BackupManager.lnk" "$INSTDIR\BackupManager.exe" "" "$INSTDIR\BackupManager.exe" 0
+  CreateShortcut "$DESKTOP\BackupManager.lnk" "$INSTDIR\BackupManager.exe" "" "$INSTDIR\BackupManager.exe" 0
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
