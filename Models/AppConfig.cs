@@ -3,7 +3,7 @@ namespace BackupManager.Models;
 public class RepositoryConfig
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
-    public string Name { get; set; } = "My Repository";
+    public string Name { get; set; } = "My Source";
     public string LocalPath { get; set; } = "";
     public string Location { get; set; } = "";
     public string Password { get; set; } = "";

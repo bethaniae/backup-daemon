@@ -92,13 +92,13 @@ public class ResticService : IResticService
     public async Task<InitResult> InitRepositoryAsync(RepositoryConfig repo, CancellationToken token = default)
     {
         if (string.IsNullOrWhiteSpace(repo.Location) || string.IsNullOrWhiteSpace(repo.Password))
-            return new InitResult(false, false, "Repository location and password are required.");
+            return new InitResult(false, false, "Source location and password are required.");
 
         // Non-destructive by design: never overwrite or re-initialize an existing
         // repository. If something already exists at the remote location we leave it
         // untouched and just report that. The local copy folder is never touched here.
         if (await IsRepositoryInitializedAsync(repo, token))
-            return new InitResult(true, true, "A repository already exists at this location. Nothing was changed.");
+            return new InitResult(true, true, "A source already exists at this location. Nothing was changed.");
 
         var psi = BuildStartInfo(repo, "init");
         using var proc = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start restic.");
@@ -106,7 +106,7 @@ public class ResticService : IResticService
         await proc.WaitForExitAsync(token);
         if (proc.ExitCode != 0)
             return new InitResult(false, false, err.Trim());
-        return new InitResult(true, false, "Repository initialized.");
+        return new InitResult(true, false, "Source initialized.");
     }
 
     public async Task<List<SnapshotInfo>> GetSnapshotsAsync(RepositoryConfig repo, CancellationToken token = default)
@@ -133,7 +133,7 @@ public class ResticService : IResticService
             {
                 Finished = true,
                 Error = true,
-                Message = "Local copy folder is missing or not set on the repository."
+                Message = "Local copy folder is missing or not set on the source."
             });
             return (false, 0);
         }
@@ -247,7 +247,7 @@ public class ResticService : IResticService
         }, token);
         await proc.WaitForExitAsync(token);
         if (proc.ExitCode != 0)
-            throw new InvalidOperationException("Repository check failed. See output.");
+            throw new InvalidOperationException("Source check failed. See output.");
     }
 
     public async Task<List<string>> ListSnapshotContentsAsync(RepositoryConfig repo, string snapshotId, CancellationToken token)

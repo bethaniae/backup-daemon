@@ -11,41 +11,43 @@
         <vm:SettingsViewModel />
     </Design.DataContext>
 
-    <StackPanel Spacing="12" MaxWidth="560">
-        <TextBlock Text="Settings" FontSize="22" FontWeight="Bold" />
+    <ScrollViewer>
+        <StackPanel Spacing="12" MaxWidth="560">
+            <TextBlock Text="Settings" FontSize="22" FontWeight="Bold" />
 
-        <StackPanel Spacing="4">
-            <TextBlock Text="restic binary path" FontWeight="SemiBold" />
-            <TextBox Text="{Binding ResticPath}" PlaceholderText="restic (leave default to use PATH)" />
-            <TextBlock Text="{Binding ResticVersion}" FontSize="12"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Test restic" Command="{Binding TestCommand}" />
+            <StackPanel Spacing="4">
+                <TextBlock Text="restic binary path" FontWeight="SemiBold" />
+                <TextBox Text="{Binding ResticPath}" PlaceholderText="restic (leave default to use PATH)" />
+                <TextBlock Text="{Binding ResticVersion}" FontSize="12"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Test restic" Command="{Binding TestCommand}" />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
 
-        <StackPanel Spacing="4">
-            <TextBlock Text="Default download folder (for pulled copies)" FontWeight="SemiBold" />
-            <Grid ColumnDefinitions="*,Auto">
-                <TextBox Grid.Column="0" Text="{Binding DownloadFolder}" IsReadOnly="True" />
-                <Button Grid.Column="1" Content="Browse…" Command="{Binding PickFolderCommand}" Margin="6,0,0,0" />
-            </Grid>
-        </StackPanel>
+            <StackPanel Spacing="4">
+                <TextBlock Text="Default download folder (for pulled copies)" FontWeight="SemiBold" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding DownloadFolder}" IsReadOnly="True" />
+                    <Button Grid.Column="1" Content="Browse…" Command="{Binding PickFolderCommand}" Margin="6,0,0,0" />
+                </Grid>
+            </StackPanel>
 
-        <CheckBox Content="Only launch in the system tray (don't open a window on start)" IsChecked="{Binding StartHidden}" />
-        <CheckBox Content="Show notifications" IsChecked="{Binding NotificationsEnabled}" />
-        <CheckBox Content="Start Backup Manager when I log in" IsChecked="{Binding StartWithOs}" />
-        <StackPanel Orientation="Horizontal" Spacing="12">
-            <CheckBox Content="Activate Ducky" IsChecked="{Binding ActivateDucky}" />
-            <Button Content="Ducky art by CazBee ↗" Click="OnDuckyCreditClick" FontSize="12"
-                    Padding="0" Background="Transparent" BorderThickness="0"
-                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}"
-                    Cursor="Hand" VerticalAlignment="Center" />
-        </StackPanel>
+            <CheckBox Content="Only launch in the system tray (don't open a window on start)" IsChecked="{Binding StartHidden}" />
+            <CheckBox Content="Show notifications" IsChecked="{Binding NotificationsEnabled}" />
+            <CheckBox Content="Start Backup Manager when I log in" IsChecked="{Binding StartWithOs}" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <CheckBox Content="Activate Ducky" IsChecked="{Binding ActivateDucky}" />
+                <Button Content="Ducky art by CazBee ↗" Click="OnDuckyCreditClick" FontSize="12"
+                        Padding="0" Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource SystemControlHighlightAccentBrush}"
+                        Cursor="Hand" VerticalAlignment="Center" />
+            </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Content="Save settings" Command="{Binding SaveCommand}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Save settings" Command="{Binding SaveCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
         </StackPanel>
-        <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-    </StackPanel>
+    </ScrollViewer>
 </UserControl>

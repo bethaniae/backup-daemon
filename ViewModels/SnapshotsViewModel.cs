@@ -47,7 +47,7 @@ public partial class SnapshotsViewModel : ViewModelBase, IRefreshable
         Repositories = new ObservableCollection<RepositoryConfig>(_config.Config.Repositories);
         Snapshots = new ObservableCollection<SnapshotInfo>();
         Contents = new ObservableCollection<string>();
-        Status = Repositories.Count == 0 ? "Add a repository first." : "";
+        Status = Repositories.Count == 0 ? "Add a source first." : "";
     }
 
     partial void OnSelectedRepositoryChanged(RepositoryConfig? value)
@@ -71,13 +71,13 @@ public partial class SnapshotsViewModel : ViewModelBase, IRefreshable
         if (SelectedRepository is null)
             return;
         Busy = true;
-        Status = "Loading snapshots…";
+        Status = "Loading backups…";
         try
         {
             var list = await _restic.GetSnapshotsAsync(SelectedRepository);
             Snapshots = new ObservableCollection<SnapshotInfo>(
                 list.OrderByDescending(s => s.Time));
-            Status = Snapshots.Count == 0 ? "No snapshots yet." : $"{Snapshots.Count} snapshot(s).";
+            Status = Snapshots.Count == 0 ? "No backups yet." : $"{Snapshots.Count} backup(s).";
         }
         catch (System.Exception ex)
         {
@@ -109,7 +109,7 @@ public partial class SnapshotsViewModel : ViewModelBase, IRefreshable
     {
         if (SelectedRepository is null || SelectedSnapshot is null)
         {
-            Status = "Select a repository and a snapshot.";
+            Status = "Select a source and a backup.";
             return;
         }
         var window = App.MainWindowRef;
@@ -131,7 +131,7 @@ public partial class SnapshotsViewModel : ViewModelBase, IRefreshable
         {
             await _restic.RestoreAsync(SelectedRepository, SelectedSnapshot.Id, target, null, System.Threading.CancellationToken.None);
             Status = "Copy complete.";
-            _notify.Show("Copy complete", $"Restored snapshot {SelectedSnapshot.ShortId} to {target}.", false);
+            _notify.Show("Copy complete", $"Restored backup {SelectedSnapshot.ShortId} to {target}.", false);
         }
         catch (System.Exception ex)
         {

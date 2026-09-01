@@ -33,8 +33,6 @@ public partial class App : Application
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<RepositoriesViewModel>();
         services.AddTransient<SnapshotsViewModel>();
-        services.AddTransient<ScheduleViewModel>();
-        services.AddTransient<LogsViewModel>();
         services.AddTransient<SettingsViewModel>();
         Services = services.BuildServiceProvider();
 

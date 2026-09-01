@@ -11,59 +11,61 @@
         <vm:DashboardViewModel />
     </Design.DataContext>
 
-    <StackPanel Spacing="14">
-        <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" />
+    <ScrollViewer>
+        <StackPanel Spacing="14">
+            <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" />
 
-        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                CornerRadius="8" Padding="16">
-            <StackPanel Spacing="6">
-                <TextBlock Text="{Binding StatusText}" FontSize="15"
-                           IsVisible="{Binding !State.IsBackingUp}" />
-                <TextBlock Text="⚠ restic binary not found. Set its path in Settings."
-                           Foreground="Red" FontSize="13" IsVisible="{Binding ResticMissing}" />
+            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                    CornerRadius="8" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding StatusText}" FontSize="15"
+                               IsVisible="{Binding !State.IsBackingUp}" />
+                    <TextBlock Text="⚠ restic binary not found. Set its path in Settings."
+                               Foreground="Red" FontSize="13" IsVisible="{Binding ResticMissing}" />
 
-                <StackPanel Spacing="6" IsVisible="{Binding State.IsBackingUp}">
-                    <TextBlock FontSize="15" FontWeight="SemiBold"
-                               Text="{Binding State.BackupJobName, StringFormat='Backing up {0}…'}" />
-                    <ProgressBar Maximum="100"
-                                 Value="{Binding State.BackupPercent}"
-                                 IsIndeterminate="{Binding State.BackupIndeterminate}"
-                                 MinHeight="10" />
-                    <TextBlock Text="{Binding State.BackupDetail}" FontSize="13"
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                               TextTrimming="CharacterEllipsis" />
+                    <StackPanel Spacing="6" IsVisible="{Binding State.IsBackingUp}">
+                        <TextBlock FontSize="15" FontWeight="SemiBold"
+                                   Text="{Binding State.BackupJobName, StringFormat='Backing up {0}…'}" />
+                        <ProgressBar Maximum="100"
+                                     Value="{Binding State.BackupPercent}"
+                                     IsIndeterminate="{Binding State.BackupIndeterminate}"
+                                     MinHeight="10" />
+                        <TextBlock Text="{Binding State.BackupDetail}" FontSize="13"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
                 </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Sync new data now" Command="{Binding SyncNowCommand}"
+                        FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190"
+                        IsEnabled="{Binding !State.IsBackingUp}" />
+                <Button Content="Pull a copy from a backup" Command="{Binding PullCopyCommand}"
+                        FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190" />
             </StackPanel>
-        </Border>
 
-        <StackPanel Orientation="Horizontal" Spacing="12">
-            <Button Content="Sync new data now" Command="{Binding SyncNowCommand}"
-                    FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190"
-                    IsEnabled="{Binding !State.IsBackingUp}" />
-            <Button Content="Pull a copy from a backup" Command="{Binding PullCopyCommand}"
-                    FontSize="16" Padding="22,12" MinHeight="46" MinWidth="190" />
+            <TextBlock Text="Recent activity" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <ItemsControl ItemsSource="{Binding RecentRuns}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="6" Padding="12,8" Margin="0,4"
+                                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding JobName}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:g}'}" FontSize="12" />
+                                    <TextBlock Text="{Binding Success, StringFormat='Success: {0}'}" FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
-
-        <TextBlock Text="Recent activity" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
-        <ItemsControl ItemsSource="{Binding RecentRuns}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border CornerRadius="6" Padding="12,8" Margin="0,4"
-                            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{Binding JobName}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:g}'}" FontSize="12" />
-                                <TextBlock Text="{Binding Success, StringFormat='Success: {0}'}" FontSize="12"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </StackPanel>
+    </ScrollViewer>
 </UserControl>

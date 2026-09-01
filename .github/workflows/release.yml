@@ -39,7 +39,9 @@ jobs:
       - name: Publish (self-contained, ${{ matrix.rid }})
         run: >
           dotnet publish BackupManager.csproj -c Release -f ${{ matrix.tfm }}
-          -r ${{ matrix.rid }} --self-contained -o ./publish
+          -r ${{ matrix.rid }} --self-contained
+          -p:Version=${GITHUB_REF_NAME#v}
+          -o ./publish
 
       - name: Install NSIS and zip
         if: matrix.rid == 'win-x64'

@@ -13,11 +13,11 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,Auto,*,*" ColumnDefinitions="*,*">
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Snapshots" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Backups" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
 
         <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
             <ComboBox ItemsSource="{Binding Repositories}" SelectedItem="{Binding SelectedRepository}"
-                      PlaceholderText="Select a repository" Width="300">
+                      PlaceholderText="Select a source" Width="300">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}" />
@@ -53,7 +53,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="Select a snapshot, then choose 'Pull a copy' to restore it to a folder of your choice."
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Select a backup, then choose 'Pull a copy' to restore it to a folder of your choice."
                    FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                    Margin="0,8,0,0" TextWrapping="Wrap" />
     </Grid>

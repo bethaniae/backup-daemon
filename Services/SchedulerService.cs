@@ -85,7 +85,7 @@ public class SchedulerService : ISchedulerService
             var repo = _config.Config.Repositories.FirstOrDefault(r => r.Id == job.RepositoryId);
             if (repo is null)
             {
-                Finish(job, false, "Repository not found.", TimeSpan.Zero, 0, manual, token);
+                Finish(job, false, "Source not found.", TimeSpan.Zero, 0, manual, token);
                 return;
             }
 
@@ -148,7 +148,7 @@ public class SchedulerService : ISchedulerService
     private static (string Title, string Body) BuildSyncMessage(
         BackupJob job, RepositoryConfig? repo, bool success, string detail, bool manual)
     {
-        var repoName = repo?.Name ?? "the repository";
+        var repoName = repo?.Name ?? "the source";
         if (manual)
         {
             return success

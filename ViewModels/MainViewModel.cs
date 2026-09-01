@@ -48,6 +48,8 @@ public partial class MainViewModel : ObservableObject
 
     public bool ForceClose { get; set; }
 
+    public string AppVersion => BackupManager.AppVersion.Current;
+
     public MainViewModel(IConfigStore config, ISchedulerService scheduler,
         IResticService restic, INotificationService notify, AppState state)
     {
@@ -60,10 +62,8 @@ public partial class MainViewModel : ObservableObject
         _isSchedulePaused = scheduler.IsPaused;
 
         NavItems.Add(new NavItem { Name = "Dashboard", Icon = "🏠", ViewModelType = typeof(DashboardViewModel) });
-        NavItems.Add(new NavItem { Name = "Repositories", Icon = "🗄️", ViewModelType = typeof(RepositoriesViewModel) });
-        NavItems.Add(new NavItem { Name = "Snapshots", Icon = "📸", ViewModelType = typeof(SnapshotsViewModel) });
-        NavItems.Add(new NavItem { Name = "Schedule", Icon = "🕒", ViewModelType = typeof(ScheduleViewModel) });
-        NavItems.Add(new NavItem { Name = "Logs", Icon = "📜", ViewModelType = typeof(LogsViewModel) });
+        NavItems.Add(new NavItem { Name = "Sources", Icon = "🗄️", ViewModelType = typeof(RepositoriesViewModel) });
+        NavItems.Add(new NavItem { Name = "Backups", Icon = "📸", ViewModelType = typeof(SnapshotsViewModel) });
         NavItems.Add(new NavItem { Name = "Settings", Icon = "⚙️", ViewModelType = typeof(SettingsViewModel) });
 
         SelectedNav = NavItems[0];
@@ -93,7 +93,10 @@ public partial class MainViewModel : ObservableObject
                 parts.Add(Path.GetFileName(p.CurrentFile));
             _state.BackupDetail = parts.Count > 0 ? string.Join(" — ", parts) : "Preparing backup…";
         };
-        _scheduler.RunCompleted += (_, e) => _state.RaiseDataChanged();
+        _scheduler.RunCompleted += (_, e) => {
+            _state.RecentRuns.Add(e);
+            _state.RaiseDataChanged();
+        };
         _notify.NotificationRequested += (_, e) => { };
 
         _duckVisible = _config.Config.Settings.ActivateDucky;
@@ -158,7 +161,7 @@ public partial class MainViewModel : ObservableObject
         var job = _config.Config.Jobs.FirstOrDefault(j => j.Enabled);
         if (job is null)
         {
-            _notify.Show("Nothing to sync", "Add a backup job in the Schedule tab first.", true);
+            _notify.Show("Nothing to sync", "Add a backup job on the Sources tab first.", true);
             return;
         }
         await _scheduler.RunJobAsync(job, manual: true);

@@ -11,39 +11,84 @@
         <vm:RepositoriesViewModel />
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Repositories" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
+    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*,*">
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Sources" FontSize="22" FontWeight="Bold" Margin="0,0,0,8" />
 
-        <StackPanel Grid.Column="0" Grid.Row="1" Spacing="6">
-            <Button Content="New repository" Command="{Binding NewCommand}" HorizontalAlignment="Stretch" />
-            <ListBox ItemsSource="{Binding Repositories}" SelectedItem="{Binding Selected}"
-                     Height="380" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+        <Grid Grid.Column="0" Grid.Row="1" RowDefinitions="Auto,*">
+            <Button Grid.Row="0" Content="New source" Command="{Binding NewCommand}" HorizontalAlignment="Stretch" />
+            <ListBox Grid.Row="1" ItemsSource="{Binding Repositories}" SelectedItem="{Binding Selected}"
+                     Margin="0,6,0,0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-        </StackPanel>
+        </Grid>
 
-        <StackPanel Grid.Column="1" Grid.Row="1" Spacing="8" Margin="14,0,0,0">
-            <TextBox PlaceholderText="Friendly name" Text="{Binding Name}" />
-            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
-                <TextBox Grid.Column="0" PlaceholderText="Local copy folder (the folder to keep in sync)" Text="{Binding LocalPath}" />
-                <Button Grid.Column="1" Content="Browse…" Command="{Binding PickLocalFolderCommand}" Margin="6,0,0,0" />
-            </Grid>
-            <TextBox PlaceholderText="Repository location (remote, e.g. /backups or sftp:user@host:/path)" Text="{Binding Location}" />
-            <TextBox PlaceholderText="Password" Text="{Binding Password}" PasswordChar="*" />
-            <TextBox PlaceholderText="Notes (optional)" Text="{Binding Notes}" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Save" Command="{Binding SaveCommand}" />
-                <Button Content="Test connection" Command="{Binding TestCommand}" />
-                <Button Content="Initialize repo" Command="{Binding InitCommand}" />
-                <Button Content="Delete" Command="{Binding DeleteCommand}"
-                        Foreground="Red" />
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="14,0,0,0">
+            <StackPanel Spacing="8">
+                <TextBox PlaceholderText="Friendly name" Text="{Binding Name}" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                    <TextBox Grid.Column="0" PlaceholderText="Local copy folder (the folder to keep in sync)" Text="{Binding LocalPath}" />
+                    <Button Grid.Column="1" Content="Browse…" Command="{Binding PickLocalFolderCommand}" Margin="6,0,0,0" />
+                </Grid>
+                <TextBox PlaceholderText="Source location (remote, e.g. /backups or sftp:user@host:/path)" Text="{Binding Location}" />
+                <TextBox PlaceholderText="Password" Text="{Binding Password}" PasswordChar="*" />
+                <TextBox PlaceholderText="Notes (optional)" Text="{Binding Notes}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Save" Command="{Binding SaveCommand}" />
+                    <Button Content="Test connection" Command="{Binding TestCommand}" />
+                    <Button Content="Initialize repo" Command="{Binding InitCommand}" />
+                    <Button Content="Delete" Command="{Binding DeleteCommand}"
+                            Foreground="Red" />
+                </StackPanel>
+                <ProgressBar IsIndeterminate="{Binding Busy}" IsVisible="{Binding Busy}" />
+                <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
             </StackPanel>
-            <ProgressBar IsIndeterminate="{Binding Busy}" IsVisible="{Binding Busy}" />
-            <TextBlock Text="{Binding Status}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-        </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto,*" Margin="0,12,0,0">
+            <Button Grid.Row="0" Content="New job" Command="{Binding NewJobCommand}" HorizontalAlignment="Stretch" />
+            <ListBox Grid.Row="1" ItemsSource="{Binding Jobs}" SelectedItem="{Binding SelectedJob}"
+                     Margin="0,6,0,0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="4">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding ScheduleTime, StringFormat='{}At {0:hh\\:mm}'}" FontSize="12"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <ScrollViewer Grid.Column="1" Grid.Row="2" Margin="14,12,0,0">
+            <StackPanel Spacing="8">
+                <TextBox PlaceholderText="Job name" Text="{Binding JobName}" />
+                <ComboBox ItemsSource="{Binding Repositories}" SelectedValue="{Binding RepositoryId}"
+                          PlaceholderText="Source" SelectedValueBinding="{Binding Id}" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Run daily at:" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ScheduleTime}" Width="80" />
+                </StackPanel>
+                <CheckBox Content="Enabled" IsChecked="{Binding JobEnabled}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Save" Command="{Binding SaveJobCommand}" />
+                    <Button Content="Run now" Command="{Binding RunJobNowCommand}" />
+                    <Button Content="Delete" Command="{Binding DeleteJobCommand}" Foreground="Red" />
+                </StackPanel>
+                <ProgressBar IsIndeterminate="{Binding JobBusy}" IsVisible="{Binding JobBusy}" />
+                <TextBlock Text="{Binding JobStatus}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+            </StackPanel>
+        </ScrollViewer>
+
     </Grid>
 </UserControl>
